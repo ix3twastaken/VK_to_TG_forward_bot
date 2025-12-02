@@ -7,25 +7,43 @@ API_TOKEN = at.BOT_API_TOKEN
 bot = telebot.TeleBot(API_TOKEN)
 
 
+def extract_urls(response_data, post_index):
+    """
+    Extracts photo URLs from a single VK post.
+    response_data: dict - response from the VK API
+    post_index: int - post index in the list of elements
+    return list[str] - list of photo URLs
+    """
+    urls = []
+    try:
+        post = response_data["response"]["items"][post_index]
+        attachments = post.get("attachments", [])
+        for attachments in attachments:
+            if attachments.get("type") == "photo":
+                sizes = attachments.get("photo", {}).get("sizes", {})
+                if sizes:
+                    url = sizes[-1]["url"]
+                    urls.append(url)
+    except  (IndexError, KeyError) as e:
+        print(f"Error extracting photo: {e}")
+    return urls
+
+
 # Получение обновлений изображения из VK
 def get_updates(count):
-    new_image_urls = []
-    items_index = int(count) - 1
-    
-    image_url = requests.get(f'https://api.vk.ru/method/wall.get?domain=nyaslav&count={count}&access_token={at.ACCESS_TOKEN}&v=5.199') 
-    json_urls = json.loads(image_url.text)
-    photo_index = 0
-    while photo_index < 10:
-        try:
-            if json_urls["response"]["items"][items_index]["attachments"][photo_index]["type"] == 'photo':    # Проверка на нужный тип файла
-                urls = json_urls["response"]["items"][items_index]["attachments"][photo_index]["photo"]["sizes"][-1]["url"]    # Получение ссылки на изображение
-                new_image_urls.append(urls)   # Добавление в список с ссылками для отправки
-        except IndexError:
-            print("index_error")
-            pass
-
-        photo_index += 1
-    return new_image_urls
+    count = int(count)
+    response = requests.get(
+        f'https://api.vk.ru/method/wall.get',
+        params={
+            'domain': 'nyaslav',
+            'count': count,
+            'access_token': at.ACCESS_TOKEN,
+            'v': '5.199'
+        }
+    )
+    data = response.json()
+    post_index = count - 1
+    return extract_urls(data, post_index)
 
 def send_image(count):
     CHAT_ID = '-100' + at.MY_CHAT_ID   # Конечный чат в которое отправляется сообщение (id = "-100" + "id чата")
