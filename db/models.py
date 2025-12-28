@@ -3,7 +3,7 @@ import sqlite3
 def get_connection():
     return sqlite3.connect("last_urls.db")
 
-def last_url_db():
+def last_url_db() -> str:
     con = get_connection()
     cursor = con.cursor()
 
@@ -14,12 +14,12 @@ def last_url_db():
     )
 
     rows = cursor.fetchone()
-    url = rows
-    # print(url)
+    url = rows[0]
     
     con.commit()
     cursor.close()
     con.close()
+
     return url
 
 def add_last_url_to_db(id: int, url: str):
