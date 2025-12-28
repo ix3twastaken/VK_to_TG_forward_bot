@@ -1,4 +1,4 @@
-import telebot
+import telebot, time
 from telebot import types
 from config import BOT_API_TOKEN, CHAT_ID, MESSAGE_THREAD_ID
 
@@ -16,3 +16,8 @@ def send_photo(photo_urls):
     else:
         media = [types.InputMediaPhoto(url) for url in photo_urls]
         bot.send_media_group(CHAT_ID, media, message_thread_id=MESSAGE_THREAD_ID)
+
+def send_post(photo_urls):
+    for post in photo_urls:
+        send_photo(post)
+        time.sleep(5)
