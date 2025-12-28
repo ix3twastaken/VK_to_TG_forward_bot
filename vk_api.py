@@ -14,7 +14,7 @@ def get_photo_urls_from_vk_post(count) -> list:
     response = requests.get(
         f'https://api.vk.ru/method/wall.get',
         params={
-            'domain': 'club231497262',
+            'domain': 'nyaslav',
             'count': count,
             'access_token': ACCESS_TOKEN,
             'v': '5.199'
