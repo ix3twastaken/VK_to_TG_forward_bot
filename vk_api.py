@@ -14,7 +14,7 @@ def get_photo_urls_from_vk_post(count) -> list:
     response = requests.get(
         f'https://api.vk.ru/method/wall.get',
         params={
-            'domain': 'nyaslav',
+            'domain': 'club231497262',
             'count': count,
             'access_token': ACCESS_TOKEN,
             'v': '5.199'
@@ -34,34 +34,52 @@ def get_photo_urls_from_vk_post(count) -> list:
                     urls.append(url)
     except  (IndexError, KeyError) as e:
         print(f"Error extracting photo: {e}")
+
     return urls
 
-def get_new_urls() -> list:
+def get_new_urls():
     """
     Просматривает все посты до тех пор, 
     пока не встретит последний уже отправленный в телеграм пост
+    urls: list - список изображений из одного поста
     last_url: str - изображение из последнего отправленного поста
-    new_urls: list - список новый изображение на отправку
+    new_urls: list - список новых изображений на отправку
     """
-    i = 2
-    last_url = last_url_db()[0] #получение последней ссылки из базы данных
-    new_urls=[]
+    post_index = 2 # Начинается с поста индексом 2
+    last_url = last_url_db() # Получение последней отправленной ссылки из базы данных
+    new_urls = []
     indexErr = False
     while True:
         try:
-            urls = get_photo_urls_from_vk_post(i)
-            if urls == []:
-                add_last_url_to_db(1, new_urls[-1])
+            urls = get_photo_urls_from_vk_post(post_index)
+
+            if urls[-1] == last_url:
+                save_last_url_in_db(new_urls)
+                print('break2')
                 break
-            elif urls[-1] != last_url:
-                for url in urls:
-                    new_urls.append(url)
-            else:
-                add_last_url_to_db(1, new_urls[-1])
+            
+            if not urls:
+                save_last_url_in_db(new_urls)
+                print('break1')
                 break
-        except IndexError:
+            new_urls.append(list(urls))
+
+            
+        except IndexError as e:
             indexErr = True
-            print('list index out of range')
+            print(f"Error extracting photo: {e}")
             break
-        i+=1
+        post_index+=1
+
     return new_urls, indexErr
+
+def save_last_url_in_db(new_urls):
+    indexErr = False
+    if new_urls:
+        latest_url = new_urls[0][0]
+        add_last_url_to_db(1, latest_url)
+    else:
+        indexErr = True
+        print("None")
+
+    return indexErr
