@@ -5,16 +5,16 @@ from db.models import *
 def get_photo_urls_from_vk_post(count) -> list:
     """
     Извлекает URL-адреса фотографий из одного поста VK.
-    response_data: dict — ответ от VK API
-    post_index: int — индекс поста в списке items
-    return list[str] — список URL-адресов фото
+    response_data: dict - ответ от VK API
+    post_index: int - индекс поста в списке items
+    return list[str] - список URL-адресов фото
     """
     count = int(count)
     post_index = count - 1
     response = requests.get(
         f'https://api.vk.ru/method/wall.get',
         params={
-            'domain': 'club231497262',
+            'domain': 'nyaslav',
             'count': count,
             'access_token': ACCESS_TOKEN,
             'v': '5.199'
@@ -52,19 +52,15 @@ def get_new_urls():
     while True:
         try:
             urls = get_photo_urls_from_vk_post(post_index)
-
-            if urls[-1] == last_url:
-                save_last_url_in_db(new_urls)
-                print('break2')
-                break
-            
             if not urls:
-                save_last_url_in_db(new_urls)
-                print('break1')
+                indexErr = save_last_url_in_db(new_urls)
+                post_index+=1
+                continue
+            if urls[-1] == last_url:
+                indexErr = save_last_url_in_db(new_urls)
                 break
-            new_urls.append(list(urls))
-
             
+            new_urls.append(list(urls))
         except IndexError as e:
             indexErr = True
             print(f"Error extracting photo: {e}")
