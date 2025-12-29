@@ -1,36 +1,33 @@
 from telegram_bot import *
 from vk_api import get_new_urls
 from vk_api import get_photo_urls_from_vk_post
-from db.models import *
+from db.models import add_last_url_to_db
 
 @bot.message_handler(commands=['new'])
 def send_all_new_posts(message):
     """
     Отправляет все новые посты
     """
+    bot.send_message(message.chat.id, "Отправка изображений...")
     new_urls, indexErr = get_new_urls()
     if indexErr == True:
         bot.send_message(message.chat.id, "Нет новых постов")
     else:
-        send_post(new_urls)
+        send_post(new_urls, message)
 
 @bot.message_handler(commands=['connect'])
 def connect_to_db(message):
     """
     Меняет значение в базе данных на последнее изображение из поста post_index
     """
-    post_index = 10
+    post_index = 10 # Допустимые значения: (2, 99); Десятый пост стоит для того, чтобы проверить работоспособность бота
     urls = get_photo_urls_from_vk_post(post_index) 
     last_url = urls[-1]
     add_last_url_to_db(1, last_url)
-    print("connected")
+    db_check(message)
 
-@bot.message_handler(commands=['check'])
-def db_check(message):
-    """
-    Отправляет последний отправленный пост из базы данных
-    """
-    bot.send_photo(message.chat.id, photo=f'{last_url_db()}')
+
+
 
 
 # @bot.message_handler(commands=['other'])
