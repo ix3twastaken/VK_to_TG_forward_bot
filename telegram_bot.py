@@ -1,12 +1,16 @@
 import telebot, time
 from telebot import types
 from config import BOT_API_TOKEN, CHAT_ID, MESSAGE_THREAD_ID
+from db.models import last_url_db
 
 
 bot = telebot.TeleBot(BOT_API_TOKEN)
 
 
 def send_photo(photo_urls):
+    """
+    Отправляет одно или несколько изображений
+    """
     if not photo_urls:
         print("Нет фото для отправки")
         return
@@ -17,7 +21,18 @@ def send_photo(photo_urls):
         media = [types.InputMediaPhoto(url) for url in photo_urls]
         bot.send_media_group(CHAT_ID, media, message_thread_id=MESSAGE_THREAD_ID)
 
-def send_post(photo_urls):
+def send_post(photo_urls, message):
+    """
+    Отправляет новый пост каждые 10 секунд (если существует)
+    photo_urls: list - список постов, каждый пост содержит список url-адресов изображений
+    """
     for post in photo_urls:
         send_photo(post)
-        time.sleep(5)
+        time.sleep(10)
+    bot.send_message(message.chat.id, "Отправка завершена.")
+
+def db_check(message):
+    """
+    Отправляет последний отправленный пост из базы данных
+    """
+    bot.send_photo(message.chat.id, photo=f'{last_url_db()}', caption="Последнее отправленное изображение:")
