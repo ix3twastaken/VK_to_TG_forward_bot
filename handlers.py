@@ -8,9 +8,10 @@ def send_all_new_posts(message):
     """
     Отправляет все новые посты
     """
-    bot.send_message(message.chat.id, "Отправка изображений...")
     new_urls, indexErr = get_new_urls()
-    if indexErr == True:
+    if not indexErr:
+        bot.send_message(message.chat.id, "Отправка изображений...")
+    if indexErr:
         bot.send_message(message.chat.id, "Нет новых постов")
     else:
         send_post(new_urls, message)
@@ -25,10 +26,6 @@ def connect_to_db(message):
     last_url = urls[-1]
     add_last_url_to_db(1, last_url)
     db_check(message)
-
-
-
-
 
 # @bot.message_handler(commands=['other'])
 # def ask_for_post_number(message):
